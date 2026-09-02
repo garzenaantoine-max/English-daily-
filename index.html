@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>English Daily</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0f14;color:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:520px;margin:auto;padding:22px 16px 40px}header{text-align:center;margin:8px 0 20px}h1{margin:0;font-size:34px}.sub{color:#98a4b3;margin-top:6px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#111820;border:1px solid #26303c;padding:5px;border-radius:16px;margin-bottom:18px}
+.tab{border:0;background:transparent;color:#9aa6b5;padding:12px 5px;border-radius:12px;font-weight:700;font-size:14px}.tab.active{background:#1b2430;color:white}
+.section{display:none}.section.active{display:block}.progress{display:flex;justify-content:space-between;color:#8f9baa;font-size:13px}
+.bar{height:7px;background:#202a35;border-radius:99px;margin:8px 2px 16px}.fill{height:100%;background:#70a8ff;border-radius:99px;transition:.25s}
+.card{background:#151c25;border:1px solid #293543;border-radius:22px;padding:28px 20px;min-height:270px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.label{font-size:12px;color:#8f9baa;text-transform:uppercase;letter-spacing:1.2px}.word{font-size:38px;font-weight:800;margin:14px 0 10px}.translation{font-size:21px;color:#70a8ff;min-height:30px;font-weight:700}.example{color:#9aa6b5;margin-top:16px;line-height:1.45}
+button.action{width:100%;border:0;border-radius:14px;padding:15px;margin-top:11px;background:#70a8ff;color:#07101a;font-size:16px;font-weight:800}
+button.secondary{background:#1b2430;color:white;border:1px solid #293543}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+input{width:100%;margin-top:15px;padding:15px;border-radius:13px;border:1px solid #303b49;background:#0f151c;color:white;font-size:18px;text-align:center;outline:none}
+.result{min-height:27px;margin-top:10px;font-weight:700}.hint{text-align:center;color:#8f9baa;font-size:13px;line-height:1.4}
+.list{display:grid;gap:8px;margin-top:10px}.item{background:#151c25;border:1px solid #293543;border-radius:14px;padding:13px 15px;display:flex;justify-content:space-between}.item span:last-child{color:#70a8ff}
+</style>
+</head>
+<body><main>
+<header><h1>🇬🇧 English Daily</h1><div class="sub">Quelques mots chaque jour pour progresser</div></header>
+<div class="tabs"><button class="tab active" onclick="tab('learn',this)">📚 Apprendre</button><button class="tab" onclick="tab('review',this)">🧠 Français → Anglais</button></div>
+<section id="learn" class="section active">
+<div class="progress"><span id="count"></span><span id="score"></span></div><div class="bar"><div class="fill" id="fill"></div></div>
+<div class="card"><div class="label">Mot anglais</div><div class="word" id="en"></div><div class="translation" id="fr">••••••••</div><div class="example" id="ex"></div></div>
+<button class="action" id="reveal" onclick="reveal()">Afficher la traduction</button>
+<div class="row"><button class="action secondary" onclick="next(false)">À revoir</button><button class="action secondary" onclick="next(true)">✓ Je connais</button></div>
+</section>
+<section id="review" class="section">
+<div class="card"><div class="label">Traduis en anglais</div><div class="word" id="frq"></div><input id="answer" placeholder="Écris ta réponse…" autocomplete="off" onkeydown="if(event.key==='Enter')check()"><div class="result" id="result"></div></div>
+<button class="action" onclick="check()">Vérifier</button><button class="action secondary" onclick="reviewNext()">Mot suivant</button>
+<p class="hint">Essaie de répondre avant de regarder la correction.</p>
+</section>
+<div class="label" style="margin-top:28px">Mots du jour</div><div class="list" id="list"></div>
+</main>
+<script>
+const words=[
+["to achieve","accomplir","She worked hard to achieve her goal."],
+["reliable","fiable","He is a reliable friend."],
+["to improve","améliorer","I want to improve my English."],
+["challenge","défi","Learning a language is a challenge."],
+["although","bien que / même si","Although it was difficult, he continued."],
+["to require","nécessiter / exiger","This task requires patience."],
+["aware","conscient","Are you aware of the problem?"],
+["effort","effort","Progress requires effort."],
+["eventually","finalement / à terme","Eventually, you will become more confident."],
+["to overcome","surmonter","She overcame her fear."]
+];
+let i=0,ri=0,shown=false,known=0;
+function render(){let w=words[i];en.textContent=w[0];fr.textContent=shown?w[1]:"••••••••";ex.textContent=shown?w[2]:"";count.textContent=`Mot ${i+1} / ${words.length}`;score.textContent=`${known} appris`;fill.style.width=((i+1)/words.length*100)+"%";reveal.textContent=shown?"Cacher la traduction":"Afficher la traduction"}
+function reveal(){shown=!shown;render()}function next(ok){if(ok)known++;i=(i+1)%words.length;shown=false;render()}
+function tab(id,b){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(id==="review")renderReview()}
+function norm(s){return s.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function renderReview(){frq.textContent=words[ri][1];answer.value="";result.textContent=""}
+function check(){let ok=norm(answer.value)===norm(words[ri][0]);result.textContent=ok?"✓ Correct !":"❌ Pas tout à fait — réponse : "+words[ri][0];result.style.color=ok?"#65d38a":"#70a8ff"}
+function reviewNext(){ri=(ri+1)%words.length;renderReview()}
+list.innerHTML=words.map(w=>`<div class="item"><span>${w[0]}</span><span>${w[1]}</span></div>`).join("");render();renderReview();
+</script></body></html>
