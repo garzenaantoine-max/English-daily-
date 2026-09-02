@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>English Daily</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0f14;color:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:520px;margin:auto;padding:20px 16px 42px}header{text-align:center;margin:8px 0 18px}h1{margin:0;font-size:34px}.sub{color:#98a4b3;margin-top:5px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#111820;border:1px solid #26303c;padding:5px;border-radius:16px;margin-bottom:18px}
+.tab{border:0;background:transparent;color:#9aa6b5;padding:11px 4px;border-radius:12px;font-weight:700;font-size:13px}.tab.active{background:#1b2430;color:#fff}
+.section{display:none}.section.active{display:block}.progress{display:flex;justify-content:space-between;color:#8f9baa;font-size:13px}
+.bar{height:7px;background:#202a35;border-radius:99px;margin:8px 2px 16px}.fill{height:100%;background:#70a8ff;border-radius:99px;transition:.25s}
+.card{background:#151c25;border:1px solid #293543;border-radius:22px;padding:27px 20px;min-height:265px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.label{font-size:12px;color:#8f9baa;text-transform:uppercase;letter-spacing:1.2px}.word{font-size:37px;font-weight:800;margin:14px 0 10px}.translation{font-size:21px;color:#70a8ff;min-height:30px;font-weight:700}.example{color:#9aa6b5;margin-top:15px;line-height:1.45}
+button.action{width:100%;border:0;border-radius:14px;padding:15px;margin-top:11px;background:#70a8ff;color:#07101a;font-size:16px;font-weight:800}
+button.secondary{background:#1b2430;color:#fff;border:1px solid #293543}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+input{width:100%;margin-top:13px;padding:15px;border-radius:13px;border:1px solid #303b49;background:#0f151c;color:#fff;font-size:17px;outline:none}
+.result{min-height:27px;margin-top:10px;font-weight:700}.hint{text-align:center;color:#8f9baa;font-size:13px;line-height:1.4}
+.form{display:grid;gap:2px}.form label{text-align:left;color:#aab4c1;font-size:14px;margin-top:10px}.list{display:grid;gap:8px;margin-top:10px}
+.item{background:#151c25;border:1px solid #293543;border-radius:14px;padding:13px 15px;display:flex;justify-content:space-between;gap:10px}.item span:last-child{color:#70a8ff;text-align:right}
+.empty{text-align:center;color:#8f9baa;padding:20px}.delete{border:0;background:transparent;color:#ff7b7b;font-size:18px}
+</style>
+</head>
+<body>
+<main>
+<header><h1>🇬🇧 English Daily</h1><div class="sub">Ton vocabulaire, à ton rythme.</div></header>
+<div class="tabs">
+<button class="tab active" onclick="showTab('learn',this)">📚 Apprendre</button>
+<button class="tab" onclick="showTab('review',this)">🧠 Traduire</button>
+<button class="tab" onclick="showTab('add',this)">➕ Ajouter</button>
+</div>
+
+<section id="learn" class="section active">
+<div class="progress"><span id="count"></span><span id="score"></span></div>
+<div class="bar"><div class="fill" id="fill"></div></div>
+<div class="card"><div class="label">Mot anglais</div><div class="word" id="en"></div><div class="translation" id="fr">••••••••</div><div class="example" id="ex"></div></div>
+<button class="action" id="reveal" onclick="reveal()">Afficher la traduction</button>
+<div class="row"><button class="action secondary" onclick="next(false)">À revoir</button><button class="action secondary" onclick="next(true)">✓ Je connais</button></div>
+</section>
+
+<section id="review" class="section">
+<div class="card"><div class="label">Traduis en anglais</div><div class="word" id="frq"></div>
+<input id="answer" placeholder="Écris ta réponse…" autocomplete="off" onkeydown="if(event.key==='Enter')checkAnswer()">
+<div class="result" id="result"></div></div>
+<button class="action" onclick="checkAnswer()">Vérifier</button>
+<button class="action secondary" onclick="reviewNext()">Mot suivant</button>
+<p class="hint">Tes mots ajoutés sont eux aussi révisables ici.</p>
+</section>
+
+<section id="add" class="section">
+<div class="card" style="min-height:0">
+<div class="label">Ajouter un nouveau mot</div>
+<div class="form">
+<label for="newFr">🇫🇷 Français</label><input id="newFr" placeholder="ex. courage">
+<label for="newEn">🇬🇧 Anglais</label><input id="newEn" placeholder="ex. courage">
+<label for="newEx">Phrase d'exemple (facultatif)</label><input id="newEx" placeholder="ex. It takes courage.">
+</div>
+</div>
+<button class="action" onclick="addWord()">➕ Ajouter le mot</button>
+<div class="result" id="addResult"></div>
+<p class="hint">Les mots sont enregistrés sur cet appareil. Ils restent même après avoir fermé Safari.</p>
+</section>
+
+<div class="label" style="margin-top:28px">Tous tes mots</div>
+<div class="list" id="list"></div>
+</main>
+
+<script>
+const starter=[
+["to achieve","accomplir","She worked hard to achieve her goal."],
+["reliable","fiable","He is a reliable friend."],
+["to improve","améliorer","I want to improve my English."],
+["challenge","défi","Learning a language is a challenge."],
+["although","bien que / même si","Although it was difficult, he continued."],
+["to require","nécessiter / exiger","This task requires patience."],
+["aware","conscient","Are you aware of the problem?"],
+["effort","effort","Progress requires effort."],
+["eventually","finalement / à terme","Eventually, you will become more confident."],
+["to overcome","surmonter","She overcame her fear."]
+];
+let saved=JSON.parse(localStorage.getItem("englishDailyWords")||"null");
+let words=saved||starter.map(x=>({en:x[0],fr:x[1],ex:x[2],custom:false}));
+let i=0,ri=0,shown=false,known=0;
+
+function save(){localStorage.setItem("englishDailyWords",JSON.stringify(words))}
+function render(){
+ if(!words.length)return;
+ let w=words[i%words.length];
+ document.getElementById("en").textContent=w.en;
+ document.getElementById("fr").textContent=shown?w.fr:"••••••••";
+ document.getElementById("ex").textContent=shown?w.ex:"";
+ document.getElementById("count").textContent=`Mot ${i%words.length+1} / ${words.length}`;
+ document.getElementById("score").textContent=`${known} appris`;
+ document.getElementById("fill").style.width=((i%words.length+1)/words.length*100)+"%";
+ document.getElementById("reveal").textContent=shown?"Cacher la traduction":"Afficher la traduction";
+ renderList();
+}
+function reveal(){shown=!shown;render()}
+function next(ok){if(ok)known++;i=(i+1)%words.length;shown=false;render()}
+function showTab(id,btn){
+ document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));btn.classList.add("active");
+ if(id==="review")renderReview();
+}
+function norm(s){return s.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function renderReview(){
+ if(!words.length)return;
+ document.getElementById("frq").textContent=words[ri%words.length].fr;
+ document.getElementById("answer").value="";
+ document.getElementById("result").textContent="";
+}
+function checkAnswer(){
+ let w=words[ri%words.length],ok=norm(document.getElementById("answer").value)===norm(w.en);
+ let r=document.getElementById("result");
+ r.textContent=ok?"✓ Correct !":"❌ Pas tout à fait — réponse : "+w.en;
+ r.style.color=ok?"#65d38a":"#70a8ff";
+}
+function reviewNext(){ri=(ri+1)%words.length;renderReview()}
+function addWord(){
+ let fr=document.getElementById("newFr").value.trim(),en=document.getElementById("newEn").value.trim(),ex=document.getElementById("newEx").value.trim();
+ let r=document.getElementById("addResult");
+ if(!fr||!en){r.textContent="⚠️ Remplis au moins les deux traductions.";r.style.color="#ffb45c";return}
+ words.push({fr,en,ex:ex||"Exemple à ajouter.",custom:true});save();
+ document.getElementById("newFr").value="";document.getElementById("newEn").value="";document.getElementById("newEx").value="";
+ r.textContent="✓ Mot ajouté !";r.style.color="#65d38a";i=words.length-1;render();
+}
+function removeWord(n){
+ if(!words[n].custom)return;
+ words.splice(n,1);if(i>=words.length)i=0;if(ri>=words.length)ri=0;save();render();renderReview();
+}
+function renderList(){
+ let box=document.getElementById("list");
+ if(!words.length){box.innerHTML='<div class="empty">Aucun mot.</div>';return}
+ box.innerHTML=words.map((w,n)=>`<div class="item"><span>${w.en}</span><span>${w.fr}${w.custom?` <button class="delete" onclick="removeWord(${n})">×</button>`:""}</span></div>`).join("");
+}
+render();renderReview();
+</script>
+</body>
+</html>
